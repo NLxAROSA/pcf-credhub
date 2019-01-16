@@ -3,18 +3,13 @@ package io.pivotal.lars.credhub.pcfcredhub;
 import java.util.List;
 import java.util.UUID;
 
-import javax.swing.text.StyleConstants.FontConstants;
-
 import org.springframework.credhub.core.CredHubOperations;
 import org.springframework.credhub.support.CredentialDetails;
 import org.springframework.credhub.support.CredentialName;
-import org.springframework.credhub.support.CredentialPath;
 import org.springframework.credhub.support.CredentialSummary;
-import org.springframework.credhub.support.ParametersRequest;
 import org.springframework.credhub.support.SimpleCredentialName;
 import org.springframework.credhub.support.certificate.CertificateCredential;
 import org.springframework.credhub.support.certificate.CertificateCredentialDetails;
-import org.springframework.credhub.support.certificate.CertificateCredentialRequest;
 import org.springframework.credhub.support.certificate.CertificateParameters;
 import org.springframework.credhub.support.certificate.CertificateParametersRequest;
 import org.springframework.credhub.support.certificate.CertificateSummary;
@@ -100,7 +95,7 @@ public class CredHubService {
     public CertificateSummary getCertificate2(String name) {
         return credHubOperations.certificates().getByName(new SimpleCredentialName(name));
     }
-    
+
     public List<CredentialSummary> getCredentials() {
         return credHubOperations.credentials().findByName(new SimpleCredentialName("/"));
     }
