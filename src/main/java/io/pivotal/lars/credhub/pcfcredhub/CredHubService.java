@@ -3,6 +3,8 @@ package io.pivotal.lars.credhub.pcfcredhub;
 import java.util.List;
 import java.util.UUID;
 
+import javax.swing.text.StyleConstants.FontConstants;
+
 import org.springframework.credhub.core.CredHubOperations;
 import org.springframework.credhub.support.CredentialDetails;
 import org.springframework.credhub.support.CredentialName;
@@ -46,10 +48,23 @@ public class CredHubService {
         CredentialDetails<PasswordCredential> password = credHubOperations.credentials()
                 .generate(PasswordParametersRequest.builder().name(credentialName).parameters(parameters).build());
 
-        return password.getValue().getPassword();
+        return "Generated password " + password.getValue().getPassword() + " with name " + password.getName();
     }
 
-    public CertificateCredential generateCertificate() {
+    public String rotatePassword(String name) {
+        SimpleCredentialName credentialName = new SimpleCredentialName(name);
+
+        CredentialDetails<PasswordCredential> oldPassword = credHubOperations.credentials().getByName(credentialName,
+                PasswordCredential.class);
+
+        CredentialDetails<PasswordCredential> newPassword = credHubOperations.credentials().regenerate(credentialName,
+                PasswordCredential.class);
+
+        return "Changed password with name " + credentialName + " from " + oldPassword.getValue().getPassword() + " to "
+                + newPassword.getValue().getPassword();
+    }
+
+    public CredentialDetails<CertificateCredential> generateCertificate() {
         CredentialName credentialName = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
 
         CertificateParameters certificateParameters = CertificateParameters.builder().commonName("commonname")
@@ -58,19 +73,43 @@ public class CredHubService {
         CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
                 CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
         log.info("Generated certificate with id {}, name {}", certificate.getId(), certificate.getName());
-        return certificate.getValue();
+        return certificate;
+    }
+
+    public CredentialDetails<CertificateCredential> rotateCertificate(String name) {
+        CredentialDetails<CertificateCredential> cert = credHubOperations.credentials()
+                .regenerate(new SimpleCredentialName(name), CertificateCredential.class);
+        log.info("Regenerated certificate with id {}, name {}", cert.getId(), cert.getName());
+        return cert;
+    }
+
+    public CredentialName rotateCertificate2(String id) {
+        CertificateCredentialDetails cert = credHubOperations.certificates().regenerate(id, false);
+        log.info("Regenerated certificate with id {}, name {}", cert.getId(), cert.getName());
+        return cert.getName();
     }
 
     public List<CertificateSummary> getCertificates() {
         return credHubOperations.certificates().getAll();
     }
 
-    public CertificateCredential getCertificate(String name) {
+    public CredentialDetails<CertificateCredential> getCertificate(String name) {
+        return getCredentialDetails(name);
+    }
+
+    public CertificateSummary getCertificate2(String name) {
+        return credHubOperations.certificates().getByName(new SimpleCredentialName(name));
+    }
+    
+    public List<CredentialSummary> getCredentials() {
+        return credHubOperations.credentials().findByName(new SimpleCredentialName("/"));
+    }
+
+    private CredentialDetails<CertificateCredential> getCredentialDetails(String name) {
         CredentialName credentialName = new SimpleCredentialName(name);
         log.info("Getting certificate by name {}", name);
         CredentialDetails<CertificateCredential> creds = credHubOperations.credentials().getByName(credentialName,
                 CertificateCredential.class);
-        return creds.getValue();
+        return creds;
     }
-
 }

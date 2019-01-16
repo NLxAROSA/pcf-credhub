@@ -7,7 +7,9 @@ import org.springframework.credhub.support.certificate.CertificateSummary;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.credhub.support.CredentialPath;
+import org.springframework.credhub.support.CredentialDetails;
+import org.springframework.credhub.support.CredentialName;
+import org.springframework.credhub.support.CredentialSummary;
 
 /**
  * CredHubController
@@ -21,29 +23,44 @@ public class CredHubController {
         this.credHubService = credHubService;
     }
 
-    @GetMapping
-    public CertificateCredential generateCertificate()  {
+    @GetMapping("/certificates/generate")
+    public CredentialDetails<CertificateCredential> generateCertificate()  {
         return credHubService.generateCertificate();
     }
 
-    @GetMapping("/password")
+    @GetMapping("/certificates/rotate")
+    public CredentialDetails<CertificateCredential> rotateCertificate(@RequestParam String name)   {
+        return credHubService.rotateCertificate(name);
+    }
+
+    @GetMapping("/passwords/generate")
     public String generatePassword()    {
         return credHubService.generatePassword();
     }
 
+    @GetMapping("/passwords/rotate")
+    public String generatePassword(@RequestParam String name)    {
+        return credHubService.rotatePassword(name);
+    }
+
     @GetMapping("/certificates")
-    public CertificateCredential getCertificate(@RequestParam String name)  {
+    public CredentialDetails<CertificateCredential> getCertificate(@RequestParam String name)  {
         return credHubService.getCertificate(name);
     }
 
-    @GetMapping("/credentials")
-    public List<CredentialPath> getCredentials()    {
-        return credHubService.getCredentials();
+    @GetMapping("/certificates2")
+    public CertificateSummary getCertificate2(@RequestParam String name)  {
+        return credHubService.getCertificate2(name);
     }
 
-    @GetMapping("/certificateslist")
+    @GetMapping("/certificates/list")
     public List<CertificateSummary> getCertificates()  {
-        return credHubService.getCertificates();
+        return credHubService.getCertificates();        
+    }
+
+    @GetMapping("/credentials/list")
+    public List<CredentialSummary> getCredentials() {
+        return credHubService.getCredentials();
     }
 
 }
