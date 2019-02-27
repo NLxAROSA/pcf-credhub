@@ -71,17 +71,37 @@ public class CredHubService {
         return certificate;
     }
 
-    public CredentialDetails<CertificateCredential> rotateCertificate(String name) {
+    public CredentialDetails<CertificateCredential> generateCaCertificate() {
+        CredentialName credentialName = new SimpleCredentialName("myroot", "rootcertificate");
+
+        CertificateParameters certificateParameters = CertificateParameters.builder()
+                .commonName("myrootcertificatecommonname").organization("myrootorg").organizationUnit("myrootorgunit")
+                .certificateAuthority(true).duration(90).selfSign(true).build();
+
+        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
+                CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
+        log.info("Generated root certificate with id {}, name {}", certificate.getId(), certificate.getName());
+        return certificate;
+    }
+
+    public CredentialDetails<CertificateCredential> generateCertificateSignedByCa() {
+        CredentialName credentialName = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
+
+        CertificateParameters certificateParameters = CertificateParameters.builder().commonName("commonname")
+                .organization("myorg").organizationUnit("myorgunit").duration(90)
+                .certificateAuthorityCredential(new SimpleCredentialName("myroot", "rootcertificate")).build();
+
+        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
+                CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
+        log.info("Generated certificate with id {}, name {} signed by root cert", certificate.getId(), certificate.getName());
+        return certificate;
+    }
+
+    public CredentialDetails<CertificateCredential> rotateCertificateByName(String name) {
         CredentialDetails<CertificateCredential> cert = credHubOperations.credentials()
                 .regenerate(new SimpleCredentialName(name), CertificateCredential.class);
         log.info("Regenerated certificate with id {}, name {}", cert.getId(), cert.getName());
         return cert;
-    }
-
-    public CredentialName rotateCertificate2(String id) {
-        CertificateCredentialDetails cert = credHubOperations.certificates().regenerate(id, false);
-        log.info("Regenerated certificate with id {}, name {}", cert.getId(), cert.getName());
-        return cert.getName();
     }
 
     public List<CertificateSummary> getCertificates() {
@@ -90,10 +110,6 @@ public class CredHubService {
 
     public CredentialDetails<CertificateCredential> getCertificate(String name) {
         return getCredentialDetails(name);
-    }
-
-    public CertificateSummary getCertificate2(String name) {
-        return credHubOperations.certificates().getByName(new SimpleCredentialName(name));
     }
 
     public List<CredentialSummary> getCredentials() {

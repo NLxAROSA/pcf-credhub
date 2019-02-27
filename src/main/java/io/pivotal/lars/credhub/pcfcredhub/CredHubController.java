@@ -29,7 +29,7 @@ public class CredHubController {
 
     @GetMapping("/certificates/rotate")
     public CredentialDetails<CertificateCredential> rotateCertificate(@RequestParam String name)   {
-        return credHubService.rotateCertificate(name);
+        return credHubService.rotateCertificateByName(name);
     }
 
     @GetMapping("/passwords/generate")
@@ -47,11 +47,6 @@ public class CredHubController {
         return credHubService.getCertificate(name);
     }
 
-    @GetMapping("/certificates2")
-    public CertificateSummary getCertificate2(@RequestParam String name)  {
-        return credHubService.getCertificate2(name);
-    }
-
     @GetMapping("/certificates/list")
     public List<CertificateSummary> getCertificates()  {
         return credHubService.getCertificates();        
@@ -60,6 +55,16 @@ public class CredHubController {
     @GetMapping("/credentials/list")
     public List<CredentialSummary> getCredentials() {
         return credHubService.getCredentials();
+    }
+
+    @GetMapping("/certificates/generate/ca")
+    public CredentialDetails<CertificateCredential> generateRoot()  {
+        return credHubService.generateCaCertificate();
+    }
+
+    @GetMapping("/certificates/generate/byca")
+    public CredentialDetails<CertificateCredential> generateCertificateByCa()  {
+        return credHubService.generateCertificateSignedByCa();
     }
 
 }
