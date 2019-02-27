@@ -9,10 +9,10 @@ import org.springframework.credhub.support.CredentialName;
 import org.springframework.credhub.support.CredentialSummary;
 import org.springframework.credhub.support.SimpleCredentialName;
 import org.springframework.credhub.support.certificate.CertificateCredential;
-import org.springframework.credhub.support.certificate.CertificateCredentialDetails;
 import org.springframework.credhub.support.certificate.CertificateParameters;
 import org.springframework.credhub.support.certificate.CertificateParametersRequest;
 import org.springframework.credhub.support.certificate.CertificateSummary;
+import org.springframework.credhub.support.certificate.CertificateParameters.CertificateParametersBuilder;
 import org.springframework.credhub.support.password.PasswordCredential;
 import org.springframework.credhub.support.password.PasswordParameters;
 import org.springframework.credhub.support.password.PasswordParametersRequest;
@@ -59,41 +59,35 @@ public class CredHubService {
                 + newPassword.getValue().getPassword();
     }
 
-    public CredentialDetails<CertificateCredential> generateCertificate() {
-        CredentialName credentialName = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
-
-        CertificateParameters certificateParameters = CertificateParameters.builder().commonName("commonname")
-                .organization("myorg").organizationUnit("myorgunit").duration(90).selfSign(true).build();
-
-        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
-                CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
-        log.info("Generated certificate with id {}, name {}", certificate.getId(), certificate.getName());
-        return certificate;
-    }
-
     public CredentialDetails<CertificateCredential> generateCaCertificate() {
         CredentialName credentialName = new SimpleCredentialName("myroot", "rootcertificate");
-
-        CertificateParameters certificateParameters = CertificateParameters.builder()
-                .commonName("myrootcertificatecommonname").organization("myrootorg").organizationUnit("myrootorgunit")
-                .certificateAuthority(true).duration(90).selfSign(true).build();
-
-        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
-                CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
-        log.info("Generated root certificate with id {}, name {}", certificate.getId(), certificate.getName());
-        return certificate;
+        return generateCertificate(credentialName, null);
     }
 
     public CredentialDetails<CertificateCredential> generateCertificateSignedByCa() {
-        CredentialName credentialName = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
+        CredentialName name = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
+        CredentialName caName = new SimpleCredentialName("myroot", "rootcertificate");
 
-        CertificateParameters certificateParameters = CertificateParameters.builder().commonName("commonname")
-                .organization("myorg").organizationUnit("myorgunit").duration(90)
-                .certificateAuthorityCredential(new SimpleCredentialName("myroot", "rootcertificate")).build();
+        return generateCertificate(name, caName);
+    }
 
-        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
-                CertificateParametersRequest.builder().name(credentialName).parameters(certificateParameters).build());
-        log.info("Generated certificate with id {}, name {} signed by root cert", certificate.getId(), certificate.getName());
+    public CredentialDetails<CertificateCredential> generateCertificate(CredentialName name, CredentialName caName) {
+
+        CertificateParametersBuilder builder = CertificateParameters.builder();
+
+        builder.commonName("commonname").organization("myorg").organizationUnit("myorgunit").duration(90);
+
+        if (caName != null) {
+            builder.certificateAuthorityCredential(caName);
+        } else {
+            builder.selfSign(true);
+        }
+
+        CertificateParameters certificateParameters = builder.build();
+
+        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials()
+                .generate(CertificateParametersRequest.builder().name(name).parameters(certificateParameters).build());
+        log.info("Generated certificate with id {}, name {}", certificate.getId(), certificate.getName());
         return certificate;
     }
 

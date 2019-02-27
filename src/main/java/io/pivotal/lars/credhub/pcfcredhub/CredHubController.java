@@ -22,11 +22,6 @@ public class CredHubController {
         this.credHubService = credHubService;
     }
 
-    @GetMapping("/certificates/generate")
-    public CredentialDetails<CertificateCredential> generateCertificate()  {
-        return credHubService.generateCertificate();
-    }
-
     @GetMapping("/certificates/rotate")
     public CredentialDetails<CertificateCredential> rotateCertificate(@RequestParam String name)   {
         return credHubService.rotateCertificateByName(name);
