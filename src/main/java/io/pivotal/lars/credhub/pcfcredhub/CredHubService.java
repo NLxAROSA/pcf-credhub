@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.credhub.core.CredHubOperations;
+import org.springframework.credhub.core.permissionV2.CredHubPermissionV2Operations;
 import org.springframework.credhub.support.CredentialDetails;
 import org.springframework.credhub.support.CredentialName;
+import org.springframework.credhub.support.CredentialPermission;
 import org.springframework.credhub.support.CredentialSummary;
 import org.springframework.credhub.support.SimpleCredentialName;
 import org.springframework.credhub.support.certificate.CertificateCredential;
@@ -28,9 +30,16 @@ import lombok.extern.slf4j.Slf4j;
 public class CredHubService {
 
     private final CredHubOperations credHubOperations;
+    private final CredHubPermissionV2Operations permissionV2Operations;
 
     public CredHubService(CredHubOperations credHubOperations) {
         this.credHubOperations = credHubOperations;
+        this.permissionV2Operations = credHubOperations.permissionsV2();
+    }
+
+    public CredentialPermission getPermissions(String id)   {
+        log.info("Getting permissions with id {}", id);
+        return permissionV2Operations.getPermissions(id);
     }
 
     public String generatePassword() {
@@ -60,13 +69,13 @@ public class CredHubService {
     }
 
     public CredentialDetails<CertificateCredential> generateCaCertificate() {
-        CredentialName credentialName = new SimpleCredentialName("myroot", "rootcertificate");
+        CredentialName credentialName = new SimpleCredentialName("myroot", "mycacertificate");
         return generateCertificate(credentialName, null);
     }
 
     public CredentialDetails<CertificateCredential> generateCertificateSignedByCa() {
-        CredentialName name = new SimpleCredentialName(UUID.randomUUID().toString(), "certificate");
-        CredentialName caName = new SimpleCredentialName("myroot", "rootcertificate");
+        CredentialName name = new SimpleCredentialName("myroot", UUID.randomUUID().toString(), "certificate");
+        CredentialName caName = new SimpleCredentialName("myroot", "mycacertificate");
 
         return generateCertificate(name, caName);
     }
@@ -80,15 +89,22 @@ public class CredHubService {
         if (caName != null) {
             builder.certificateAuthorityCredential(caName);
         } else {
+            builder.certificateAuthority(true);
             builder.selfSign(true);
         }
 
         CertificateParameters certificateParameters = builder.build();
 
-        CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials()
-                .generate(CertificateParametersRequest.builder().name(name).parameters(certificateParameters).build());
-        log.info("Generated certificate with id {}, name {}", certificate.getId(), certificate.getName());
-        return certificate;
+        try {
+            CredentialDetails<CertificateCredential> certificate = credHubOperations.credentials().generate(
+                    CertificateParametersRequest.builder().name(name).parameters(certificateParameters).build());
+            log.info("Generated certificate with id {}, name {}", certificate.getId(), certificate.getName());
+            return certificate;
+        } catch (Exception e) {
+            log.error("An error occurred " + e.getMessage());
+            log.error("Failed to generate certificate with name {}", name.getName());
+            throw new RuntimeException(e);
+        }
     }
 
     public CredentialDetails<CertificateCredential> rotateCertificateByName(String name) {

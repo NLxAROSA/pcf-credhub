@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.credhub.support.CredentialDetails;
+import org.springframework.credhub.support.CredentialPermission;
 import org.springframework.credhub.support.CredentialSummary;
 
 /**
@@ -20,6 +21,11 @@ public class CredHubController {
 
     public CredHubController(CredHubService credHubService) {
         this.credHubService = credHubService;
+    }
+
+    @GetMapping("/permissions")
+    public CredentialPermission getPermissions(@RequestParam String id)    {
+        return credHubService.getPermissions(id);
     }
 
     @GetMapping("/certificates/rotate")
