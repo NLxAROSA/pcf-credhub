@@ -1,3 +1,18 @@
 spring:
   credhub:
     url: https://credhub.service.cf.internal:8844
+    oauth2:
+      registration-id: credhubtest
+  security:
+    oauth2:
+      client:
+        registration:
+          credhubtest:
+            provider: uaa
+            client-id: 
+            client-secret: 
+            authorization-grant-type: client_credentials
+        provider:
+          uaa:
+            token-uri: https://uaa.sys.lropcf.pushto.cf/oauth/token/
+            

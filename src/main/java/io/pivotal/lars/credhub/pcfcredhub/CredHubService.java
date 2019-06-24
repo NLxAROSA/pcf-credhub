@@ -44,7 +44,9 @@ public class CredHubService {
 
     public String generatePassword() {
 
-        SimpleCredentialName credentialName = new SimpleCredentialName(UUID.randomUUID().toString(), "password");
+        SimpleCredentialName credentialName = new SimpleCredentialName("mypasswords","UUID.randomUUID().toString()");
+
+        log.warn("Generating credential with name {}", credentialName.getName());
 
         PasswordParameters parameters = PasswordParameters.builder().length(12).excludeLower(false).excludeUpper(false)
                 .excludeNumber(false).includeSpecial(true).build();
@@ -70,6 +72,7 @@ public class CredHubService {
 
     public CredentialDetails<CertificateCredential> generateCaCertificate() {
         CredentialName credentialName = new SimpleCredentialName("myroot", "mycacertificate");
+        log.warn("Generating certificate with name {}", credentialName);
         return generateCertificate(credentialName, null);
     }
 
