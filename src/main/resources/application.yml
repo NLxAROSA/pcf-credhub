@@ -9,8 +9,8 @@ spring:
         registration:
           credhubtest:
             provider: uaa
-            client-id: 
-            client-secret: 
+            client-id: test
+            client-secret: test
             authorization-grant-type: client_credentials
         provider:
           uaa:
