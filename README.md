@@ -6,9 +6,9 @@ Simple web application that demonstrates the usage of the Credhub API via Spring
 
 ### Create a UAA client using the UAAC CLI
 ```bash
+uaac target <yourserverhostname>
 uaac token client get admin -s <youradminclientsecret>
-
-uaac client add --name credhubtest4 --scope uaa.none --authorized_grant_types client_credentials --authorities "credhub.write,credhub.read"
+uaac client add --name credhubtest --scope uaa.none --authorized_grant_types client_credentials --authorities "credhub.write,credhub.read"
 
 ```
 
@@ -20,9 +20,9 @@ credhub api --server <hostname-or-ip-of-pas-credhub>
 
 credhub login --client-name credhub_admin_client --client-secret <yourcredhubadminclientsecret>
 
-credhub curl -p /api/v2/permissions -X POST -d '{"path": "/mypasswords/*","actor": "uaa-client:credhubtest4", "operations": ["read","write"]}'
+credhub curl -p /api/v2/permissions -X POST -d '{"path": "/mypasswords/*","actor": "uaa-client:credhubtest", "operations": ["read","write"]}'
 
-credhub curl -p /api/v2/permissions -X POST -d '{"path": "/myroot/mycacertificate","actor": "uaa-client:credhubtest4", "operations": ["read","write"]}'
+credhub curl -p /api/v2/permissions -X POST -d '{"path": "/myroot/*","actor": "uaa-client:credhubtest", "operations": ["read","write"]}'
 ```
 
 ### Add the UAA client credentials in the app config
@@ -31,5 +31,5 @@ Add the client-id and client-secret you created in the first step in your [appli
 
 ### Build and run the app and push it to CF
 ```bash
-./mvn clean package && cf push
+./mvnw clean package && cf push
 ```

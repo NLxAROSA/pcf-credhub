@@ -9,10 +9,10 @@ spring:
         registration:
           credhubtest:
             provider: uaa
-            client-id: test
-            client-secret: test
+            client-id: credhubtest
+            client-secret: credhubtest
             authorization-grant-type: client_credentials
         provider:
           uaa:
-            token-uri: https://uaa.sys.lropcf.pushto.cf/oauth/token/
+            token-uri: https://uaa.sys.cf.cloud-native.biz/oauth/token/
             
